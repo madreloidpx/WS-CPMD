@@ -24,7 +24,11 @@ func main() {
 
 	data := ReadNodeFile(filename)
 	nodes := GenerateNodeData(data)
+	fmt.Println("Node Data:")
 	fmt.Println(nodes)
+	weakcliques := GenerateWeakCliqueData(nodes)
+	fmt.Println("Weak Clique Data:")
+	fmt.Println(weakcliques)
 }
 
 func ReadNodeFile(filename string) [][]string {

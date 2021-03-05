@@ -13,14 +13,16 @@ type Node struct {
 }
 
 type NodeFactory struct {
-	Nodes  map[string]Node
-	Length int
+	Nodes    map[string]Node
+	IndexMap map[int]Node
+	Length   int
 }
 
 func Nodes() NodeFactory {
 	nodes := NodeFactory{
-		Nodes:  make(map[string]Node),
-		Length: 0,
+		Nodes:    make(map[string]Node),
+		IndexMap: make(map[int]Node),
+		Length:   0,
 	}
 	return nodes
 }
@@ -33,6 +35,7 @@ func (nf *NodeFactory) CreateNode(name string) Node {
 		OutLink: map[int]bool{nf.Length: true},
 	}
 	nf.Nodes[name] = n
+	nf.IndexMap[nf.Length] = n
 	nf.Length = nf.Length + 1
 	return n
 }
