@@ -2,14 +2,25 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"strings"
 )
 
 func main() {
-	nodes := Nodes()
-	nodes.ShowNodes()
+	var filename string
+	flag.StringVar(&filename, "fn", "", "ex test.dat")
+
+	var outfile string
+	flag.StringVar(&outfile, "out", "community.dat", "ex community.dat")
+
+	flag.Parse()
+
+	if filename == "" {
+		fmt.Println("Please provide a filename.")
+		return
+	}
 }
 
 func ReadNodeFile(filename string) [][]string {
