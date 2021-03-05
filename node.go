@@ -6,11 +6,10 @@ import (
 
 //Node node object
 type Node struct {
-	Name     string
-	Index    int
-	InBinary map[int]bool
-	InLink   map[int]bool
-	OutLink  map[int]bool
+	Name    string
+	Index   int
+	InLink  map[int]bool
+	OutLink map[int]bool
 }
 
 type NodeFactory struct {
@@ -28,11 +27,10 @@ func Nodes() NodeFactory {
 
 func (nf *NodeFactory) CreateNode(name string) Node {
 	n := Node{
-		Name:     name,
-		Index:    nf.Length,
-		InBinary: map[int]bool{nf.Length: true},
-		InLink:   map[int]bool{nf.Length: true},
-		OutLink:  map[int]bool{nf.Length: true},
+		Name:    name,
+		Index:   nf.Length,
+		InLink:  map[int]bool{nf.Length: true},
+		OutLink: map[int]bool{nf.Length: true},
 	}
 	nf.Nodes[name] = n
 	nf.Length = nf.Length + 1
