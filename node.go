@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"reflect"
 )
 
 //Node node object
@@ -11,7 +10,7 @@ type Node struct {
 	Index    int
 	InBinary map[int]bool
 	InLink   map[int]bool
-	Outlink  map[int]bool
+	OutLink  map[int]bool
 }
 
 type NodeFactory struct {
@@ -21,39 +20,65 @@ type NodeFactory struct {
 
 func Nodes() NodeFactory {
 	nodes := NodeFactory{
-		Nodes:  nil,
+		Nodes:  make(map[string]Node),
 		Length: 0,
 	}
 	return nodes
 }
 
-func (nf NodeFactory) CreateNode(name string) Node {
+func (nf *NodeFactory) CreateNode(name string) Node {
 	n := Node{
 		Name:     name,
 		Index:    nf.Length,
 		InBinary: map[int]bool{nf.Length: true},
 		InLink:   map[int]bool{nf.Length: true},
-		Outlink:  map[int]bool{nf.Length: true},
+		OutLink:  map[int]bool{nf.Length: true},
 	}
 	nf.Nodes[name] = n
 	nf.Length = nf.Length + 1
 	return n
 }
 
-func (nf NodeFactory) ShowNodes() {
-	nodes := reflect.ValueOf(nf.Nodes).MapKeys()
-	fmt.Println(nodes)
+func (nf NodeFactory) ShowNodes() []string {
+	nodes := make([]string, 0, nf.Length)
+	for k := range nf.Nodes {
+		nodes = append(nodes, k)
+	}
+	return nodes
 }
 
-func (n Node) AddInLink(in int) {
+func (n *Node) AddInLink(in int) {
 	n.InLink[in] = true
 }
 
-func (n Node) AddOutLink(out int) {
-	n.Outlink[out] = true
+func (n *Node) AddOutLink(out int) {
+	n.OutLink[out] = true
 }
 
-func (nf NodeFactory) CreateEdge(in, out string) {
+func (n Node) ShowInLink() []int {
+	links := make([]int, 0, len(n.InLink))
+	for k := range n.InLink {
+		links = append(links, k)
+	}
+	return links
+}
+
+func (n Node) ShowOutLink() []int {
+	links := make([]int, 0, len(n.OutLink))
+	for k := range n.OutLink {
+		links = append(links, k)
+	}
+	return links
+}
+
+func (n Node) PrintNode() {
+	fmt.Print("Node:", n.Name)
+	fmt.Print(" Index:", n.Index)
+	fmt.Print(" In:", n.ShowInLink())
+	fmt.Print(" Out:", n.ShowOutLink())
+}
+
+func (nf *NodeFactory) CreateEdge(in, out string) {
 	inNode, exist := nf.Nodes[in]
 	if exist == false {
 		inNode = nf.CreateNode(in)
