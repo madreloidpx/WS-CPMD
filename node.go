@@ -90,3 +90,11 @@ func (nf *NodeFactory) CreateEdge(in, out string) {
 	nf.Nodes[inNode.Name] = inNode
 	nf.Nodes[outNode.Name] = outNode
 }
+
+func GenerateNodeData(data [][]string) NodeFactory {
+	nodes := Nodes()
+	for _, nodepair := range data {
+		nodes.CreateEdge(nodepair[0], nodepair[1])
+	}
+	return nodes
+}

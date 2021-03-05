@@ -21,6 +21,10 @@ func main() {
 		fmt.Println("Please provide a filename.")
 		return
 	}
+
+	data := ReadNodeFile(filename)
+	nodes := GenerateNodeData(data)
+	fmt.Println(nodes)
 }
 
 func ReadNodeFile(filename string) [][]string {
@@ -41,5 +45,7 @@ func ReadNodeFile(filename string) [][]string {
 }
 
 func Handle(err error) {
-	fmt.Printf(err.Error())
+	if err != nil {
+		panic(err)
+	}
 }
