@@ -45,7 +45,7 @@ func TestMergeCliques(t *testing.T) {
 	wq1 := weakcliques.WeakCliques["3"]
 	wq2 := weakcliques.WeakCliques["C"]
 	newWQL := WeakCliques()
-	newWQL.MergeCliques(wq1, wq2)
+	newWQL.MergeCliques("F", wq1, wq2)
 	_, exist := newWQL.WeakCliques["F"]
 	if exist == false {
 		t.Error("Weak Cliques didn't merge.", wq1, wq2, newWQL)

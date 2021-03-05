@@ -29,6 +29,9 @@ func main() {
 	weakcliques := GenerateWeakCliqueData(nodes)
 	fmt.Println("Weak Clique Data:")
 	fmt.Println(weakcliques)
+	communities := weakcliques.GenerateCommunityData()
+	fmt.Println("Communities:")
+	fmt.Println(communities)
 }
 
 func ReadNodeFile(filename string) [][]string {

@@ -69,10 +69,8 @@ func (wqf *WeakCliqueFactory) CreateWeakClique(nodes []Node) {
 	}
 }
 
-func (wqf *WeakCliqueFactory) MergeCliques(wq1, wq2 WeakClique) {
+func (wqf *WeakCliqueFactory) MergeCliques(hexname string, wq1, wq2 WeakClique) {
 	members := mergeMap(wq1.Members, wq2.Members)
-	memlist := ShowMembers(members)
-	hexname := HexName(memlist)
 	inlink := mergeMap(wq1.InLink, wq2.InLink)
 	outlink := mergeMap(wq1.OutLink, wq2.OutLink)
 	wq := WeakClique{
@@ -150,4 +148,76 @@ func GenerateWeakCliqueData(nodes NodeFactory) WeakCliqueFactory {
 		}
 	}
 	return weakcliques
+}
+
+func (wq *WeakClique) MarkMerged() {
+	wq.Merged = true
+}
+
+func CompareLinks(list1, list2 map[int]bool) map[int]bool {
+	similar := make(map[int]bool)
+	for k := range list1 {
+		val, _ := list2[k]
+		if val == true {
+			similar[k] = true
+		}
+	}
+	return similar
+}
+
+func (wqf WeakCliqueFactory) GenerateCommunityData() map[string]WeakClique {
+	community := make(map[string]WeakClique)
+	wqData := wqf.WeakCliques
+	for {
+		tmpWQData := MergeCliquesIteration(wqData)
+		for wqHex, wq := range wqData {
+			if wq.Merged == false {
+				fmt.Println("Adding to community:", wq)
+				community[wqHex] = wq
+			}
+		}
+		wqData = tmpWQData
+		if len(wqData) == 0 {
+			break
+		}
+	}
+	community2 := MergeCliquesIteration(community)
+	for wqHex, wq := range community {
+		if wq.Merged == false {
+			fmt.Println("Adding to community:", wq)
+			community2[wqHex] = wq
+		}
+	}
+	return community2
+}
+
+func MergeCliquesIteration(wqData map[string]WeakClique) map[string]WeakClique {
+	tmpWQData := WeakCliques()
+	for i, wq1 := range wqData {
+		for j, wq2 := range wqData {
+			if i != j {
+				members := mergeMap(wq1.Members, wq2.Members)
+				memlist := ShowMembers(members)
+				hexName := HexName(memlist)
+				_, exist := tmpWQData.WeakCliques[hexName]
+				if exist == true {
+					continue
+				}
+				sameIn := CompareLinks(wq1.InLink, wq2.InLink)
+				sameIn = CompareLinks(sameIn, members)
+				sameOut := CompareLinks(wq1.OutLink, wq2.OutLink)
+				sameOut = CompareLinks(sameOut, members)
+				if len(members) > len(sameIn)+1 || len(members) > len(sameOut)+1 {
+					continue
+				}
+				fmt.Println("Merging", wq1, wq2)
+				tmpWQData.MergeCliques(hexName, wq1, wq2)
+				wq1.MarkMerged()
+				wq2.MarkMerged()
+				wqData[i] = wq1
+				wqData[j] = wq2
+			}
+		}
+	}
+	return tmpWQData.WeakCliques
 }
