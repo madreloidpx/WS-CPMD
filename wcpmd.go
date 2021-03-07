@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -57,6 +58,7 @@ func main() {
 	}
 	fmt.Println("Nodes with no communities:")
 	fmt.Println(unassigned)
+	printCommunityData(outfile, communityConverted, unassigned)
 }
 
 func ReadNodeFile(filename string) [][]string {
@@ -76,30 +78,57 @@ func ReadNodeFile(filename string) [][]string {
 	return data
 }
 
+func printCommunityData(filename string, community [][]string, nonmember []string) {
+	f, err := os.Create(filename)
+	Handle(err)
+	defer f.Close()
+
+	mappedCommunity := make(map[string][]string)
+	for i, c := range community {
+		for _, node := range c {
+			v, exist := mappedCommunity[node]
+			if exist == false {
+				var comIn []string
+				comIn = append(comIn, strconv.Itoa((i + 1)))
+				mappedCommunity[node] = comIn
+			} else {
+				v = append(v, strconv.Itoa((i + 1)))
+				mappedCommunity[node] = v
+			}
+
+		}
+	}
+
+	fmt.Println(mappedCommunity)
+
+	w := bufio.NewWriter(f)
+	for k, v := range mappedCommunity {
+		_, err := w.WriteString(k + "\t")
+		Handle(err)
+		for i, comm := range v {
+			_, err := w.WriteString(comm)
+			Handle(err)
+			if i < len(comm) {
+				_, err := w.WriteString(" ")
+				Handle(err)
+			}
+		}
+		_, err = w.WriteString("\n")
+		Handle(err)
+	}
+	for i, nm := range nonmember {
+		_, err := w.WriteString(nm)
+		Handle(err)
+		if i < len(nonmember)-1 {
+			_, err := w.WriteString("\n")
+			Handle(err)
+		}
+	}
+	w.Flush()
+}
+
 func Handle(err error) {
 	if err != nil {
 		panic(err)
 	}
 }
-
-// func printCommunityGivenNodeComData(filename string, nodeComList []nodeCom) {
-// 	fmt.Println("Writing file...")
-// 	f, err := os.Create(filename)
-// 	Handle(err)
-// 	defer f.Close()
-
-// 	w := bufio.NewWriter(f)
-// 	for i, nc := range nodeComList {
-// 		_, err := w.WriteString(nc.node.Name + "\t")
-// 		Handle(err)
-// 		for _, com := range nc.community {
-// 			_, err := w.WriteString(strconv.Itoa(com) + " ")
-// 			Handle(err)
-// 		}
-// 		if i != len(nodeComList)-1 {
-// 			_, err = w.WriteString("\n")
-// 			Handle(err)
-// 		}
-// 	}
-// 	w.Flush()
-// }
