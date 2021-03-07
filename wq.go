@@ -169,30 +169,30 @@ func (wqf WeakCliqueFactory) GenerateCommunityData() map[string]WeakClique {
 	community := make(map[string]WeakClique)
 	wqData := wqf.WeakCliques
 	for {
-		tmpWQData := MergeCliquesIteration(wqData)
+		tmpWQData, changed := MergeCliquesIteration(wqData)
 		for wqHex, wq := range wqData {
 			if wq.Merged == false {
-				fmt.Println("Adding to community:", wq)
-				community[wqHex] = wq
+				//fmt.Println("Adding to community:", wq)
+				tmpWQData[wqHex] = wq
 			}
 		}
 		wqData = tmpWQData
-		if len(wqData) == 0 {
+		if changed == false {
 			break
 		}
 	}
-	community2 := MergeCliquesIteration(community)
-	for wqHex, wq := range community {
+	for wqHex, wq := range wqData {
 		if wq.Merged == false {
 			fmt.Println("Adding to community:", wq)
-			community2[wqHex] = wq
+			community[wqHex] = wq
 		}
 	}
-	return community2
+	return community
 }
 
-func MergeCliquesIteration(wqData map[string]WeakClique) map[string]WeakClique {
+func MergeCliquesIteration(wqData map[string]WeakClique) (map[string]WeakClique, bool) {
 	tmpWQData := WeakCliques()
+	changed := false
 	for i, wq1 := range wqData {
 		for j, wq2 := range wqData {
 			if i != j {
@@ -216,8 +216,9 @@ func MergeCliquesIteration(wqData map[string]WeakClique) map[string]WeakClique {
 				wq2.MarkMerged()
 				wqData[i] = wq1
 				wqData[j] = wq2
+				changed = true
 			}
 		}
 	}
-	return tmpWQData.WeakCliques
+	return tmpWQData.WeakCliques, changed
 }
