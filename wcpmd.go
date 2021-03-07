@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -101,20 +102,23 @@ func printCommunityData(filename string, community [][]string, nonmember []strin
 
 	fmt.Println(mappedCommunity)
 
+	var sortedKeys []string
+	for k := range mappedCommunity {
+		sortedKeys = append(sortedKeys, k)
+	}
+	sort.Strings(sortedKeys)
+
 	w := bufio.NewWriter(f)
-	for k, v := range mappedCommunity {
-		_, err := w.WriteString(k + "\t")
-		Handle(err)
-		for i, comm := range v {
-			_, err := w.WriteString(comm)
-			Handle(err)
-			if i < len(comm) {
-				_, err := w.WriteString(" ")
-				Handle(err)
-			}
+	for i, k := range sortedKeys {
+		line := k + "\t"
+		v, _ := mappedCommunity[k]
+		for _, c := range v {
+			line = line + c + " "
 		}
-		_, err = w.WriteString("\n")
-		Handle(err)
+		if i < len(sortedKeys)-1 || len(nonmember) != 0 {
+			line = line + "\n"
+		}
+		w.WriteString(line)
 	}
 	for i, nm := range nonmember {
 		_, err := w.WriteString(nm)
