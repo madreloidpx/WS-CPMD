@@ -78,6 +78,7 @@ func main() {
 	fmt.Println("Nodes with no communities:")
 	fmt.Println(unassigned)
 	printCommunityData(outfile, communityConverted, unassigned)
+	printTimeLog(timefile, initElapsed, comGenTimeElapsed)
 }
 
 func ReadNodeFile(filename string) [][]string {
