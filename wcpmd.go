@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func main() {
@@ -17,6 +18,9 @@ func main() {
 	var outfile string
 	flag.StringVar(&outfile, "out", "community.dat", "ex community.dat")
 
+	var timefile string
+	flag.StringVar(&timefile, "tfile", "timelog.dat", "ex timelog.dat")
+
 	flag.Parse()
 
 	if filename == "" {
@@ -24,13 +28,22 @@ func main() {
 		return
 	}
 
+	initTime := time.Now()
+
 	data := ReadNodeFile(filename)
 	nodes := GenerateNodeData(data)
-	fmt.Println("Node Data:")
-	fmt.Println(nodes)
+	fmt.Println("Node Len:")
+	fmt.Println(nodes.Length)
 	weakcliques := GenerateWeakCliqueData(nodes)
-	fmt.Println("Weak Clique Data:")
-	fmt.Println(weakcliques)
+	fmt.Println("Initial Weak Clique Len:")
+	fmt.Println(weakcliques.Length)
+
+	initTimeEnd := time.Now()
+	initElapsed := initTimeEnd.Sub(initTime)
+	fmt.Println("Graph initialization:", initElapsed)
+
+	comGenTime := time.Now()
+
 	communities := weakcliques.GenerateCommunityData()
 	fmt.Println("Communities:")
 	var communityConverted [][]string
@@ -57,6 +70,11 @@ func main() {
 			unassigned = append(unassigned, v)
 		}
 	}
+
+	comGenTimeEnd := time.Now()
+	comGenTimeElapsed := comGenTimeEnd.Sub(comGenTime)
+	fmt.Println("Community Generation Time:", comGenTimeElapsed)
+
 	fmt.Println("Nodes with no communities:")
 	fmt.Println(unassigned)
 	printCommunityData(outfile, communityConverted, unassigned)
@@ -77,6 +95,17 @@ func ReadNodeFile(filename string) [][]string {
 	Handle(err)
 
 	return data
+}
+
+func printTimeLog(filename string, initTime, comGenTime time.Duration) {
+	f, err := os.Create(filename)
+	Handle(err)
+	defer f.Close()
+
+	w := bufio.NewWriter(f)
+	w.WriteString("Graph initialization time: " + initTime.String() + "\n")
+	w.WriteString("Community generation time: " + comGenTime.String())
+	w.Flush()
 }
 
 func printCommunityData(filename string, community [][]string, nonmember []string) {
@@ -100,7 +129,7 @@ func printCommunityData(filename string, community [][]string, nonmember []strin
 		}
 	}
 
-	fmt.Println(mappedCommunity)
+	//fmt.Println(mappedCommunity)
 
 	var sortedKeys []string
 	for k := range mappedCommunity {
