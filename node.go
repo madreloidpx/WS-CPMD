@@ -6,22 +6,25 @@ import (
 
 //Node node object
 type Node struct {
-	Name    string
-	Index   int
-	InLink  map[int]bool
-	OutLink map[int]bool
+	Name        string
+	Index       int
+	Complete    bool
+	InLink      map[int]bool
+	OutLink     map[int]bool
+	WeakCliques map[string]*WeakClique
+	MarkedWQ    int
 }
 
 type NodeFactory struct {
 	Nodes    map[string]Node
-	IndexMap map[int]Node
+	IndexMap map[int]*Node
 	Length   int
 }
 
 func Nodes() NodeFactory {
 	nodes := NodeFactory{
 		Nodes:    make(map[string]Node),
-		IndexMap: make(map[int]Node),
+		IndexMap: make(map[int]*Node),
 		Length:   0,
 	}
 	return nodes
@@ -29,13 +32,16 @@ func Nodes() NodeFactory {
 
 func (nf *NodeFactory) CreateNode(name string) Node {
 	n := Node{
-		Name:    name,
-		Index:   nf.Length,
-		InLink:  map[int]bool{nf.Length: true},
-		OutLink: map[int]bool{nf.Length: true},
+		Name:        name,
+		Index:       nf.Length,
+		Complete:    false,
+		InLink:      map[int]bool{nf.Length: true},
+		OutLink:     map[int]bool{nf.Length: true},
+		WeakCliques: make(map[string]*WeakClique),
+		MarkedWQ:    0,
 	}
 	nf.Nodes[name] = n
-	nf.IndexMap[nf.Length] = n
+	nf.IndexMap[nf.Length] = &n
 	nf.Length = nf.Length + 1
 	return n
 }
@@ -54,6 +60,21 @@ func (n *Node) AddInLink(in int) {
 
 func (n *Node) AddOutLink(out int) {
 	n.OutLink[out] = true
+}
+
+func (n *Node) AddWQMark() {
+	n.MarkedWQ = n.MarkedWQ + 1
+	if n.MarkedWQ == len(n.WeakCliques) {
+		n.Complete = true
+	}
+}
+
+func (n *Node) AddWeakClique(hexname string, wq *WeakClique) {
+	_, exist := n.WeakCliques[hexname]
+	if exist == false {
+		n.WeakCliques[hexname] = wq
+		wq.Parent = n
+	}
 }
 
 func (n Node) ShowInLink() []int {
@@ -76,7 +97,14 @@ func (n Node) PrintNode() {
 	fmt.Print("Node:", n.Name)
 	fmt.Print(" Index:", n.Index)
 	fmt.Print(" In:", n.ShowInLink())
-	fmt.Print(" Out:", n.ShowOutLink())
+	fmt.Print(" Out:", n.ShowOutLink(), "\n")
+	fmt.Println("Weak Cliques:", n.WeakCliques)
+}
+
+func (nf NodeFactory) PrintNodeData() {
+	for _, node := range nf.Nodes {
+		node.PrintNode()
+	}
 }
 
 func (nf *NodeFactory) CreateEdge(in, out string) {
