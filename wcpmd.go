@@ -28,61 +28,52 @@ func main() {
 		return
 	}
 
-	// initTime := time.Now()
+	initTime := time.Now()
 
 	data := ReadNodeFile(filename)
 	nodes := GenerateNodeData(data)
 	fmt.Println("Node Len:")
 	fmt.Println(nodes.Length)
 	nodes.GenerateWeakCliqueData()
-	nodes.PrintNodeData()
+	// nodes.PrintNodeData()
 	communities := nodes.GenerateCommunityData()
 	fmt.Println("Communities:", len(communities))
-	for _, community := range communities {
-		fmt.Println(community)
+	// for _, community := range communities {
+	// 	fmt.Println(community)
+	// }
+
+	initTimeEnd := time.Now()
+	initElapsed := initTimeEnd.Sub(initTime)
+	fmt.Println("Time Elapsed:", initElapsed)
+
+	var communityConverted [][]string
+	for _, v := range communities {
+		var convertedMembers []string
+		for member := range v.Members {
+			val, _ := nodes.IndexMap[member]
+			convertedMembers = append(convertedMembers, val.Name)
+		}
+		communityConverted = append(communityConverted, convertedMembers)
+	}
+	fmt.Println(communityConverted)
+	var unassigned []string
+	for _, v := range nodes.ShowNodes() {
+		marked := false
+		for _, cm := range communityConverted {
+			for _, c := range cm {
+				if v == c {
+					marked = true
+				}
+			}
+		}
+		if marked == false {
+			unassigned = append(unassigned, v)
+		}
 	}
 
-	// initTimeEnd := time.Now()
-	// initElapsed := initTimeEnd.Sub(initTime)
-	// fmt.Println("Graph initialization:", initElapsed)
-
-	// comGenTime := time.Now()
-
-	// communities := weakcliques.GenerateCommunityData()
-	// fmt.Println("Communities:")
-	// var communityConverted [][]string
-	// for _, v := range communities {
-	// 	var convertedMembers []string
-	// 	for member := range v.Members {
-	// 		val, _ := nodes.IndexMap[member]
-	// 		convertedMembers = append(convertedMembers, val.Name)
-	// 	}
-	// 	communityConverted = append(communityConverted, convertedMembers)
-	// }
-	// fmt.Println(communityConverted)
-	// var unassigned []string
-	// for _, v := range nodes.ShowNodes() {
-	// 	marked := false
-	// 	for _, cm := range communityConverted {
-	// 		for _, c := range cm {
-	// 			if v == c {
-	// 				marked = true
-	// 			}
-	// 		}
-	// 	}
-	// 	if marked == false {
-	// 		unassigned = append(unassigned, v)
-	// 	}
-	// }
-
-	// comGenTimeEnd := time.Now()
-	// comGenTimeElapsed := comGenTimeEnd.Sub(comGenTime)
-	// fmt.Println("Community Generation Time:", comGenTimeElapsed)
-
-	// fmt.Println("Nodes with no communities:")
-	// fmt.Println(unassigned)
-	// printCommunityData(outfile, communityConverted, unassigned)
-	// printTimeLog(timefile, initElapsed, comGenTimeElapsed)
+	fmt.Println("Nodes with no communities:")
+	fmt.Println(unassigned)
+	printCommunityData(outfile, communityConverted, unassigned)
 }
 
 func ReadNodeFile(filename string) [][]string {
@@ -100,17 +91,6 @@ func ReadNodeFile(filename string) [][]string {
 	Handle(err)
 
 	return data
-}
-
-func printTimeLog(filename string, initTime, comGenTime time.Duration) {
-	f, err := os.Create(filename)
-	Handle(err)
-	defer f.Close()
-
-	w := bufio.NewWriter(f)
-	w.WriteString("Graph initialization time: " + initTime.String() + "\n")
-	w.WriteString("Community generation time: " + comGenTime.String())
-	w.Flush()
 }
 
 func printCommunityData(filename string, community [][]string, nonmember []string) {
